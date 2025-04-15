@@ -1,5 +1,8 @@
 import spacy 
-from src.logger import setup_logger
+import sys
+import os
+sys.path.append(os.path.abspath(os.path.join(os.getcwd(), 'src')))
+from logger import setup_logger
 
 logger = setup_logger()
 
@@ -11,12 +14,9 @@ class Requirement:
         self.doc = self.nlp(self.text)
         self.verb, self.aux, self.noun, self.propn, self.pron, self.adj, self.adv, self.sconj, self.part, self.org = self.extract_token_pos(self.text, nlp)
 
-    def extract_token_pos(self):
+    def __extract_token_pos(self):
         logger.debug("Starting the tokenization and POS tagging process")   
-        doc = self.nlp(self.text)
-        tokens = [(token.self.text, token.pos_) for token in doc]
 
-        logger.debug("Starting the token classification process")
         verb = [] # Verbo (should provide, enable, etc.)
         aux = [] # Auxiliar (should, must, can, is, are, etc.)
         noun = [] # Substantivo (system, user, report, etc.)
@@ -27,26 +27,29 @@ class Requirement:
         sconj = [] # Conjunção subordinada (so, that, when, if, because, etc.)
         part = [] # Particípio (to provide, to allow, should be, should have, etc.)
         org = [] # Organização (Nome da empresa, nome de funcionário, etc.)
-        for token, pos in tokens:
+        for token in self.doc:
+            token_text = token.text
+            pos = token.pos_
+
             if pos == "VERB":
-                verb.append(token)
+                verb.append(token_text)
             elif pos == "AUX":
-                aux.append(token)
+                aux.append(token_text)
             elif pos == "NOUN":
-                noun.append(token)
+                noun.append(token_text)
             elif pos == "PROPN":
-                propn.append(token)
+                propn.append(token_text)
             elif pos == "PRON":
-                pron.append(token)
+                pron.append(token_text)
             elif pos == "ADJ":
-                adj.append(token)
+                adj.append(token_text)
             elif pos == "ADV":
-                adv.append(token)
+                adv.append(token_text)
             elif pos == "SCONJ":
-                sconj.append(token)
+                sconj.append(token_text)
             elif pos == "PART":
-                part.append(token)
+                part.append(token_text)
             elif pos == "ORG":
-                org.append(token)
+                org.append(token_text)
         logger.debug("Token classification completed")
         return verb, aux, noun, propn, pron, adj, adv, sconj, part, org
