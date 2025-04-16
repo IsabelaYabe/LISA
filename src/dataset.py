@@ -4,37 +4,60 @@ import spacy
 import re
 import sys
 import os
-sys.path.append(os.path.abspath(os.path.join(os.getcwd(), 'src')))
+sys.path.append(os.path.abspath(os.path.join(os.getcwd(), "src")))
 from logger import setup_logger
+from requirement_documentation import RequirementDocumentation
+from requirement import Requirement
+from dataset_prepare import DatasetPrepare
 
 logger = setup_logger()
 class dataset:
-    def __init__(self, documents, usage_scenarios, requirements, user_stories):
-        self.documents = documents
-        self.usage_scenarios = usage_scenarios
-        self.requirements = requirements
-        self.user_stories = user_stories
+    def __init__(self, csv_file, docs_path=os.path.join("data", "ReqList_ReqNet_ReqSim", "1.1 ReqLists"), pattern=r"As (.*?), I want (.*?) so that (.*?)(?:\.|$)", nlp=spacy.load("en_core_web_sm")):
+        self._csv_file = csv_file
+        self._dataset_prepared = DatasetPrepare(csv_file, pattern, nlp)
+        self._docs_path = docs_path
+        self._nlp = nlp
+        self._pattern = pattern
+        self._requirement_documentations = None
+        self._usage_scenarios = None
+        self._requirements = {}
+        self._user_stories = None
 
-    def extract_subkeys(key):
-        key_split = key.split(".")
-        key_0 = ".".join(key_split[:2])
-        key_1 = key_split[2]
-        key_2 = ".".join(key_split[3:])
+    def __extract_datas_from_csv(self):
+        files_visited = []
+        pure_req_user_stories = self._dataset_prepared.dataframe
+        for index_doc, row_doc in pure_req_user_stories.iterrows():
+            current_filename = row_doc["Filename"]
+            current_filename_just_name = current_filename[:current_filename.find(".")]
+            
+            if current_filename not in files_visited:
+                files_visited.append(current_filename)
+                pure_filename = pure_req_user_stories[pure_req_user_stories["Filename"] == current_filename]
+                
+                user_stories_visited = {}
+                requirements_visited = {}
+                for index_req, row_req in pure_filename.iterrows():
+                    current_req = row_req["Requirements"] 
+                    requirement = Requirement(
+                        id = len(requirements_visited),
+                        key = row_req["key"],
+                        text = current_req,
+                        nlp = self._nlp
+                    )
+                    requirements_visited[requirement.key] = requirement
+                    self._requirements[requirement.key] = requirement
 
-        return key_0, key_1, key_2
+                    current_user_story_llama_4 = row_req["user story (us llama-4-maverick)"]
+                    for user_story in current_user_story_llama_4:
+                        if user_story not in user_stories_visited:
+                            user_stories_visited[user_story] = []
+                        user_stories_visited[user_story].append(requirement.key)
 
-if __name__ == "__main__":
-    logger.debug("Starting the dataset preparation process")
-    pure_req_user_stories_path = os.path.join("data", "pure_req_user_stories.csv")
-    pure_req_us_df = pd.read_csv(pure_req_user_stories_path)
-    
-    logger.debug("Renameing columns")
-    pure_req_us_df.rename(columns={"databricks-llama-4-maverick": "user story llama-4-maverick", "databricks-meta-llama-3-3-70b-instruct": "user story llama-3-3-70b"}, inplace=True)
-    
-    logger.debug("Extracting subkeys from the keys column")
-    pure_req_us_df[["keys_0", "keys_1", "keys_2"]] = pure_req_us_df["keys"].apply(extract_subkeys).apply(pd.Series)
 
-    logger.debug("Extracting user story parts")
-    nlp = spacy.load("en_core_web_sm")
-    pure_req_us_df["user_story_parts"] = pure_req_us_df["user story llama-4-maverick"].apply(extract_user_story_parts)
-    pure_req_us_df[["type_of_user", "goal", "reason"]] = pure_req_us_df["user story llama-4-maverick"].apply(extract_user_story_parts).apply(pd.Series)
+                requirement_documentation = RequirementDocumentation(
+                    id = len(files_visited),
+                    filename = current_filename_just_name,
+                    documentation_path = os.path.join(self._docs_path, current_filename),
+                    requirements = requirements_visited
+                )
+                self._requirement_documentations.append(requirement_documentation)
