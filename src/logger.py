@@ -140,20 +140,9 @@ class CustomLogger:
         """
         return self.logger
     
-def setup_logger():
-    """
-    Helper function to retrieve a pre-configured logger instance.
-
-    This function returns an instance of `CustomLogger`'s logger, simplifying access to a pre-configured
-    logging setup for applications that need consistent logging behavior.
-
-    Returns:
-        Logger: An instance of the logger with pre-configured handlers and filters.
-    """
-    return CustomLogger().get_logger()
+logger = CustomLogger().get_logger()
 
 if __name__ == "__main__":
-    logger = setup_logger()
     logger.debug("This is a debug message")
     logger.info("This is an info message")
     logger.warning("This is a warning message")

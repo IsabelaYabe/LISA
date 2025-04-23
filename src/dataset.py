@@ -5,23 +5,23 @@ import re
 import sys
 import os
 sys.path.append(os.path.abspath(os.path.join(os.getcwd(), "src")))
-from logger import setup_logger
+from logger import logger
 from requirement_documentation import RequirementDocumentation
 from requirement import Requirement
 from dataset_prepare import DatasetPrepare
 
-logger = setup_logger()
 class dataset:
-    def __init__(self, csv_file, docs_path=os.path.join("data", "ReqList_ReqNet_ReqSim", "1.1 ReqLists"), pattern=r"As (.*?), I want (.*?) so that (.*?)(?:\.|$)", nlp=spacy.load("en_core_web_sm")):
-        self._csv_file = csv_file
-        self._dataset_prepared = DatasetPrepare(csv_file, pattern, nlp)
-        self._docs_path = docs_path
-        self._nlp = nlp
-        self._pattern = pattern
-        self._requirement_documentations = None
-        self._usage_scenarios = None
-        self._requirements = {}
-        self._user_stories = None
+    def __init__(self, csv_file=os.path.join("data", "pure_req_user_stories.csv"), docs_path=os.path.join("data", "ReqList_ReqNet_ReqSim", "0    Requirement Specification Documents"), docs_structure_path=os.path.join("data", "ReqList_ReqNet_ReqSim", "1.3 DocumentStructure - Metadata"), pattern=r"As (.*?), I want (.*?) so that (.*?)(?:\.|$)", nlp=spacy.load("en_core_web_sm")):
+        self._csv_file=csv_file
+        self._dataset=DatasetPrepare(csv_file, pattern, nlp).dataset
+        self._docs_path=docs_path
+        self._docs_structure_path=docs_structure_path
+        self._nlp=nlp
+        self._pattern=pattern
+        self._requirement_documentations=None
+        self._usage_scenarios=None
+        self._requirements={}
+        self._user_stories=None
 
     def __extract_datas_from_csv(self):
         files_visited = []
