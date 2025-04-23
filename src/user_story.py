@@ -1,69 +1,72 @@
-import regex as re
-import spacy
 import sys
 import os
+from dataclasses import dataclass, field   
 sys.path.append(os.path.abspath(os.path.join(os.getcwd(), 'src')))
-from logger import setup_logger
+from logger import logger
 
-logger = setup_logger()
-
+@dataclass(frozen=True, slots=True)
 class UserStory:
-    def __init__(self, id, text, nlp = spacy.load("en_core_web_sm")):
-        self.id = id
-        self.text = text
-        self.type_of_user, self.goal, self.reason = self.extract_user_story_parts().values() 
-        self.nlp = nlp 
-        self.doc = self.nlp(self.text)
-        self.verb, self.aux, self.noun, self.propn, self.pron, self.adj, self.adv, self.sconj, self.part, self.org = self.__extract_token_pos()
+        id: str
+        text: str
+        type_of_user: str 
+        goal: str 
+        reason: str 
+        requirement: str
+        doc: str
+        metadata: str
+        verbs: list[str] = field(default_factory=list)
+        auxs: list[str] = field(default_factory=list)
+        nouns: list[str] = field(default_factory=list) 
+        propns: list[str] = field(default_factory=list)
+        prons: list[str] = field(default_factory=list) 
+        adjs: list[str] = field(default_factory=list) 
+        advs: list[str] = field(default_factory=list)
+        sconjs: list[str] = field(default_factory=list) 
+        parts: list[str] = field(default_factory=list) 
+        orgs: list[str] = field(default_factory=list)
 
-    def __extract_user_story_parts(self):
-        logger.debug("Starting the user story extraction process")
-        pattern = r"As a (.*?), I want (.*?) so that (.*?)(?:\.|$)"
-        match = re.findall(pattern, self.text, re.IGNORECASE)[0]
-        result = {
-                "type_of_user": match[0],
-                "goal": match[1],
-                "reason": match[2]
-            }
-        logger.debug(f"Extracted user story: {result}")
-        return result
-    
-    def __extract_token_pos(self):
-        logger.debug("Starting the tokenization and POS tagging process")   
+@dataclass(frozen=True, slots=True)
+class UsageScenario:
+        id: str
+        text: str
+        requirements: str
+        verbs: list[str] = field(default_factory=list)
+        auxs: list[str] = field(default_factory=list)
+        nouns: list[str] = field(default_factory=list) 
+        propns: list[str] = field(default_factory=list)
+        prons: list[str] = field(default_factory=list) 
+        adjs: list[str] = field(default_factory=list) 
+        advs: list[str] = field(default_factory=list)
+        sconjs: list[str] = field(default_factory=list) 
+        parts: list[str] = field(default_factory=list) 
+        orgs: list[str] = field(default_factory=list)
 
-        verb = [] # Verbo (should provide, enable, etc.)
-        aux = [] # Auxiliar (should, must, can, is, are, etc.)
-        noun = [] # Substantivo (system, user, report, etc.)
-        propn = [] # Substantivo próprio (Nome da empresa, nome de funcionário, etc.)
-        pron = [] # Pronome (user, it, they, he, she, etc.)
-        adj = [] # Adjetivo (detailed, new, old, etc.)
-        adv = [] # Advérbio (automatically, only, quickly, slowly, etc.)
-        sconj = [] # Conjunção subordinada (so, that, when, if, because, etc.)
-        part = [] # Particípio (to provide, to allow, should be, should have, etc.)
-        org = [] # Organização (Nome da empresa, nome de funcionário, etc.)
-        for token in self.doc:
-            token_text = token.text
-            pos = token.pos_
+@dataclass(frozen=True, slots=True)
+class Requirement:
+        id: str 
+        key: str
+        text: str
+        metadata: str
+        user_stories: list[str] = field(default_factory=list)
+        usage_scenarios: list[str] = field(default_factory=list)
+        verbs: list[str] = field(default_factory=list)
+        auxs: list[str] = field(default_factory=list)
+        nouns: list[str] = field(default_factory=list) 
+        propns: list[str] = field(default_factory=list)
+        prons: list[str] = field(default_factory=list) 
+        adjs: list[str] = field(default_factory=list) 
+        advs: list[str] = field(default_factory=list)
+        sconjs: list[str] = field(default_factory=list) 
+        parts: list[str] = field(default_factory=list) 
+        orgs: list[str] = field(default_factory=list)
 
-            if pos == "VERB":
-                verb.append(token_text)
-            elif pos == "AUX":
-                aux.append(token_text)
-            elif pos == "NOUN":
-                noun.append(token_text)
-            elif pos == "PROPN":
-                propn.append(token_text)
-            elif pos == "PRON":
-                pron.append(token_text)
-            elif pos == "ADJ":
-                adj.append(token_text)
-            elif pos == "ADV":
-                adv.append(token_text)
-            elif pos == "SCONJ":
-                sconj.append(token_text)
-            elif pos == "PART":
-                part.append(token_text)
-            elif pos == "ORG":
-                org.append(token_text)
-        logger.debug("Token classification completed")
-        return verb, aux, noun, propn, pron, adj, adv, sconj, part, org
+@dataclass(frozen=True, slots=True)
+class RequirementDocumentation:
+        id: str
+        title: str
+        text: str
+        documentation_path: str
+        metadata: str
+        requirements: list[Requirement] = field(default_factory=list)
+        user_stories: list[UserStory] = field(default_factory=list)
+        usage_scenarios: list[UsageScenario] = field(default_factory=list)

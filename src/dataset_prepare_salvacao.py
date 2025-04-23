@@ -4,9 +4,7 @@ import re
 import sys
 import os
 sys.path.append(os.path.abspath(os.path.join(os.getcwd(), 'src')))
-from logger import setup_logger
-
-logger = setup_logger()
+from logger import logger
 
 def extract_user_story_parts(text):
     pattern = r"As (.*?), I want (.*?) so that (.*?)(?:\.|$)"
@@ -55,7 +53,7 @@ if __name__ == "__main__":
     pure_req_us_df = pd.read_csv(pure_req_user_stories_path)
     
     logger.debug("Renameing columns")
-    pure_req_us_df.rename(columns={"databricks-llama-4-maverick": "user story llama-4-maverick", "databricks-meta-llama-3-3-70b-instruct": "user story llama-3-3-70b"}, inplace=True)
+    pure_req_us_df.rename(columns={"databricks-llama-4-maverick": "user story llama-4-maverick", "databricks-meta-llama-3-3-70b-instruct": "user story llama-3-3-70b", "databricks-meta-llama-3-1-405b-instruct": "user story llama-3-1-405b"}, inplace=True)
     
     nlp = spacy.load("en_core_web_sm")
     #logger.debug("Extracting pos tags from requirements")
