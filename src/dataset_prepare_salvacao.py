@@ -1,3 +1,8 @@
+# vou produzir com ia generativa um dataset de cenários de usos
+# em seguida vou produzir um modelo de ia generativa para gerar requisitos, aqui devemos retornar um modelo de clusterização para separar os requisitos
+# e depois um modelo de ia generativa para gerar requisitos
+
+from dataclasses import dataclass, field   
 import pandas as pd
 import spacy
 import re
@@ -6,86 +11,229 @@ import os
 sys.path.append(os.path.abspath(os.path.join(os.getcwd(), 'src')))
 from logger import logger
 
-def extract_user_story_parts(text):
-    pattern = r"As (.*?), I want (.*?) so that (.*?)(?:\.|$)"
-    user_story = []
-    user_story_parts = []
-    try:
-        matches = list(re.findall(pattern, text, re.IGNORECASE))
+@dataclass(frozen=True, slots=True)
+class UserStory:
+    id: str
+    text: str
+    type_of_user: str
+    goal: str
+    reason: str
+    requirement_id: str
+    doc_id: str
+    metadata_id: str
+
+@dataclass
+class Metadata:
+    id: str
+    doc_name: str
+    text: str
+    doc_id: str
+
+@dataclass(frozen=True, slots=True)
+class UsageScenario:
+    id: str
+    text: str
+    doc_id: str
         
-        num_matches = len(matches)
-        for i in range(num_matches):            
-            user_story.append(f"As {matches[i][0]}, I want {matches[i][1]} so that {matches[i][2]}.")
+@dataclass(frozen=True, slots=True)
+class Requirement:
+    id: str
+    key: str
+    text: str
+    metadata_id: str
+    doc_id: str
+
+@dataclass(frozen=True, slots=True)
+class RequirementDocumentation:
+    id: str
+    title: str
+    text: str
+    metadata_id: str
+
+@dataclass(frozen=True, slots=True)
+class ReqUsageScenarioMap:
+    requirement_id: str
+    usage_scenario_id: str
+
+@dataclass(frozen=True, slots=True)
+class UserStoriesUsageScenariosMAp:
+    user_storie_id: str
+    usage_scenario_id: str
+
+@dataclass(frozen=True, slots=True)
+class MetadataUsageScenarioMap:
+    metada_id: str
+    usage_scenario_id:
+
         
-            user_story_parts.append({
-                "type of user": "".join(matches[i][0].strip(" ")[1:]),
-                "goal": matches[i][1],
-                "reason": matches[i][2]
-            })
-        return user_story, user_story_parts
+# pure_req_user_stories_path = os.path.join("data", "pure_req_user_stories.csv")
+# pure_req_us_df = pd.read_csv(pure_req_user_stories_path)
+class DatasetPrepare:
+    def __init__(self, csv_file, req_doc_path, raw_text_path, doc_struct_path, pattern=r"As (.*?), I want (.*?) so that (.*?)(?:\.|$)", nlp=spacy.load("en_core_web_sm")):
+        self._csv_file = csv_file
+        self._req_doc_path = req_doc_path
+        self._raw_text_path = raw_text_path
+        self._doc_struct_path = doc_struct_path       
+        self._pattern = pattern
+        self._nlp = nlp
+        self._requeriments_extracted,self._user_stories_extracted, self._usage_scenarios_extracted, self._req_docs_extracted, self._docs_metadatas = self.__get_all_data()
+
+    def _extract_user_story_parts(self, text):
+        user_story = []
+        user_story_parts = []
+        logger.debug(f"Extracting user story parts from text: {text}")
+        try:
+            matches = list(re.findall(self._pattern, text, re.IGNORECASE))
+            num_matches = len(matches)
+
+            for i in range(num_matches):            
+                user_story.append(f"As {matches[i][0]}, I want {matches[i][1]} so that {matches[i][2]}.")
+                user_story_parts.append({
+                    "type of user": "".join(matches[i][0].strip(" ")[1:]),
+                    "goal": matches[i][1],
+                    "reason": matches[i][2]
+                })
+                
+            return user_story, user_story_parts
+        except IndexError:
+            logger.error(f"Error extracting user story parts from text (r'As a (.*?), I want (.*?) so that (.*?)(?:\.|$)'): {text}")
+            return [], []
+
+    def _get_dataframe(self):
+        logger.debug("Starting the dataset preparation process")
+        pure_req_us_df = pd.read_csv(self._csv_file)
+
+        logger.debug("Extracting user story parts llama-4-maverick")
+        pure_req_us_df[["user story (us llama-4-maverick)", "user story parts (us llama-4-maverick)"]] = pure_req_us_df.apply(lambda story_list: self._extract_user_story_parts(story_list["user story llama-4-maverick"]), axis=1, result_type="expand")
+
+        logger.debug("Extracting user story parts llama-3-3-70b")
+        pure_req_us_df[["user story (us llama-3-3-70b)", "user story parts (us llama-3-3-70b)"]] = pure_req_us_df.apply(lambda story_list: self._extract_user_story_parts(story_list["user story llama-3-3-70b"]), axis=1, result_type="expand")
+
+        logger.debug("Extracting user story parts llama-3-1-405b")
+        pure_req_us_df[["user story (us llama-3-1-405b)", "user story parts (us llama-3-1-405b)"]] = pure_req_us_df.apply(lambda story_list: self._extract_user_story_parts(story_list["user story llama-3-1-405b"]), axis=1, result_type="expand")
     
-    except IndexError:
-        logger.error(f"Error extracting user story parts from text (r'As a (.*?), I want (.*?) so that (.*?)(?:\.|$)'): {text}")
-        return [], []
+        logger.debug("Extracting user story parts dbrx")
+        pure_req_us_df[["user story (us dbrx)", "user story parts (us dbrx)"]] = pure_req_us_df.apply(lambda story_list: self._extract_user_story_parts(story_list["user story dbrx"]), axis=1, result_type="expand")
+        
+        logger.debug("Extracting user story parts mixtral-8x7b")
+        pure_req_us_df[["user story (us mixtral-8x7b)", "user story parts (us mixtral-8x7b)"]] = pure_req_us_df.apply(lambda story_list: self._extract_user_story_parts(story_list["user story mixtral-8x7b"]), axis=1, result_type="expand")
 
+        return pure_req_us_df
 
+    def _extract_metadatas(self, metadata_doc):
+        result = {}
+        pattern = re.compile(r"^([A-Z]|\d+(\.\d+)*)(\s+)(.+)")
 
-def extract_pos_from_user_story_list(user_story_list, nlp):
-    verb, aux, noun, propn, pron, adj, adv, sconj, part, org = [], [], [], [], [], [], [], [], [], []
-    for story in user_story_list:
-        v, a, n, p, pr, aj, ad, sc, pa, o = extract_token_pos(story, nlp)
-        verb.append(v)
-        aux.append(a)
-        noun.append(n)
-        propn.append(p)
-        pron.append(pr)
-        adj.append(aj)
-        adv.append(ad)
-        sconj.append(sc)
-        part.append(pa)
-        org.append(o)
+        for line in metadata_doc:
+            line = line.strip()
+            if not line:
+                continue
+
+            match = pattern.match(line)
+            if match:
+                key = match.group(1)
+                text = match.group(4)
+                result[key] = text
+
+        return result
+
+    def _extract_token_pos(self, text):
+        doc = self._nlp(text)
+        logger.debug("Starting the tokenization and POS tagging process")   
+
+        verb = [] # Verbo (should provide, enable, etc.)
+        aux = [] # Auxiliar (should, must, can, is, are, etc.)
+        noun = [] # Substantivo (system, user, report, etc.)
+        propn = [] # Substantivo próprio (Nome da empresa, nome de funcionário, etc.)
+        pron = [] # Pronome (user, it, they, he, she, etc.)
+        adj = [] # Adjetivo (detailed, new, old, etc.)
+        adv = [] # Advérbio (automatically, only, quickly, slowly, etc.)
+        sconj = [] # Conjunção subordinada (so, that, when, if, because, etc.)
+        part = [] # Particípio (to provide, to allow, should be, should have, etc.)
+        org = [] # Organização (Nome da empresa, nome de funcionário, etc.)
+        
+        for token in doc:
+            token_text = token.text
+            pos = token.pos_
+
+            if pos == "VERB":
+                verb.append(token_text)
+            elif pos == "AUX":
+                aux.append(token_text)
+            elif pos == "NOUN":
+                noun.append(token_text)
+            elif pos == "PROPN":
+                propn.append(token_text)
+            elif pos == "PRON":
+                pron.append(token_text)
+            elif pos == "ADJ":
+                adj.append(token_text)
+            elif pos == "ADV":
+                adv.append(token_text)
+            elif pos == "SCONJ":
+                sconj.append(token_text)
+            elif pos == "PART":
+                part.append(token_text)
+            elif pos == "ORG":
+                org.append(token_text)
+        logger.debug("Token classification completed")
+        return verb, aux, noun, propn, pron, adj, adv, sconj, part, org
     
-    return verb, aux, noun, propn, pron, adj, adv, sconj, part, org
+    def _extract_text_from_file(self, dir, file):
+        text = ""
+        if file.endswith(".txt"):
+            with open(os.path.join(dir, file), "r", encoding="utf-8") as file:
+                text += file.read()
+        return text
+    
+    def _extract_path_from_file(self, dir, file):
+        path = os.path.join(dir, file)
+        return path
+
+    def _dir_interable(self, dir, **kwargs):
+        returns_functions = {}
+
+        for value in kwargs.keys():
+            returns_functions[value] = []
+        
+        for file in os.listdir(dir):
+            for value, function in kwargs.items():
+                returns_functions[value].append(function(dir, file))
+        
+        return returns_functions
+    
+    def __get_all_data(self):
+        logger.debug("Starting the data extraction process")
+        requeriments_extracted = []
+        user_stories_extracted = []
+        usage_scenarios_extracted = []
+        req_docs_extracted = []
+        docs_metadatas = []
+
+        req_docs_extracted = self._dir_interable(self._req_doc_path, doc=self._extract_path_from_file)["doc"]
+
+        # Extracting the requirements
+        requeriments_extracted = self._dir_interable(self._req_doc_path, req=self._extract_req)["req"]
+        
+        docs_metadatas = self._dir_interable(self._docs_metadatas, metadata=self._extract_metadatas)["metadata"]
+
+        user_stories_extracted = self._dir_interable(self._raw_text_path, user_stories=self._extract_text_from_file)["user_stories"]
+        
+        usage_scenarios_extracted = self._dir_interable(self._doc_struct_path, usage_scenarios=self._extract_text_from_file)["usage_scenarios"]
+
+        return requeriments_extracted, user_stories_extracted, usage_scenarios_extracted, req_docs_extracted, docs_metadatas
+    
+    @property
+    def dataframe(self): 
+        return self._dataframe
+    
+    @dataframe.setter
+    def dataframe(self, value):
+        self._dataframe = value
 
 if __name__ == "__main__":
-    logger.debug("Starting the dataset preparation process")
-    pure_req_user_stories_path = os.path.join("data", "pure_req_user_stories.csv")
-    pure_req_us_df = pd.read_csv(pure_req_user_stories_path)
+    dataset = DatasetPrepare(os.path.join("data", "pure_req_user_stories.csv"))
+    logger.debug("Saving the dataset")
+    pure_req_us_df = dataset.dataframe
     
-    logger.debug("Renameing columns")
-    pure_req_us_df.rename(columns={"databricks-llama-4-maverick": "user story llama-4-maverick", "databricks-meta-llama-3-3-70b-instruct": "user story llama-3-3-70b", "databricks-meta-llama-3-1-405b-instruct": "user story llama-3-1-405b"}, inplace=True)
-    
-    nlp = spacy.load("en_core_web_sm")
-    #logger.debug("Extracting pos tags from requirements")
-    #pure_req_us_df[["verb req", "aux req", "noun req", "propn req", "pron req", "adj req", "adv req", "sconj req", "part req", "org req"]] = pure_req_us_df.apply(lambda req: extract_token_pos(req["requirement"], nlp), axis=1, result_type="expand")    
-
-    logger.debug("Extracting user story parts llama-4-maverick")
-
-    pure_req_us_df[["user story (us llama-4-maverick)", "user story parts (us llama-4-maverick)"]] = pure_req_us_df.apply(lambda story_list: extract_user_story_parts(story_list["user story llama-4-maverick"]), axis=1, result_type="expand")
-    logger.debug(f"{pure_req_us_df[["user story (us llama-4-maverick)", "user story parts (us llama-4-maverick)"]].head()}")
-    for index, row in pure_req_us_df.iterrows():
-        logger.debug(f"User story parts: {row['user story (us llama-4-maverick)']} - {row['user story parts (us llama-4-maverick)']}")
-
-    #logger.debug("Extracting pos tags from user story llama-4-maverick")
-    #pure_req_us_df[["verb us llama-4-maverick", "aux us llama-4-maverick", "noun us llama-4-maverick",
-    #            "propn us llama-4-maverick", "pron us llama-4-maverick", "adj us llama-4-maverick",
-    #            "adv us llama-4-maverick", "sconj us llama-4-maverick", "part us llama-4-maverick",
-    #            "org us llama-4-maverick"]] = pure_req_us_df.apply(lambda story_list: extract_pos_from_user_story_list(story_list["user story (us llama-4-maverick)"], nlp), axis=1, result_type="expand")
-#
-#
-    #logger.debug("Extracting user story parts llama-3-3-70b")
-    #pure_req_us_df[["user story (us llama-3-3-70b)", "user story parts (us llama-3-3-70b)"]] = pure_req_us_df.apply(lambda story_list: extract_user_story_parts(story_list["user story llama-3-3-70b"]), axis=1, result_type="expand")
-#
-    #logger.debug("Extracting pos tags from user story llama-3-3-70b")
-    #pure_req_us_df[["verb us llama-3-3-70b", "aux us llama-3-3-70b", "noun us llama-3-3-70b",
-    #            "propn us llama-3-3-70b", "pron us llama-3-3-70b", "adj us llama-3-3-70b",
-    #            "adv us llama-3-3-70b", "sconj us llama-3-3-70b", "part us llama-3-3-70b",
-    #            "org us llama-3-3-70b"]] = pure_req_us_df.apply(lambda story_list: extract_pos_from_user_story_list(story_list["user story (us llama-3-3-70b)"], nlp), axis=1, result_type="expand")    
-#
-    #logger.debug("Reordering columns")
-    #columns_order = ["filename", "keys", "keys_0", "keys_1", "keys_2", "requirement", "verb req", "aux req", "noun req", "propn req", "pron req", "adj req", "adv req", "sconj req", "part req", "org req",
-    #"user story llama-4-maverick", "user story (us llama-4-maverick)", "user story parts (us llama-4-maverick)", "verb us llama-4-maverick", "aux us llama-4-maverick", "noun us llama-4-maverick", "propn us llama-4-maverick", "pron us llama-4-maverick", "adj us llama-4-maverick", "adv us llama-4-maverick", "sconj us llama-4-maverick", "part us llama-4-maverick", "org us llama-4-maverick", "user story llama-3-3-70b", "user story (us llama-3-3-70b)", "user story parts (us llama-3-3-70b)", "verb us llama-3-3-70b", "aux us llama-3-3-70b", "noun us llama-3-3-70b", "propn us llama-3-3-70b", "pron us llama-3-3-70b", "adj us llama-3-3-70b", "adv us llama-3-3-70b", "sconj us llama-3-3-70b", "part us llama-3-3-70b", "org us llama-3-3-70b"]
-#
-    #pure_req_us_df = pure_req_us_df[columns_order]
-    #logger.debug("Saving the dataset")
-    #pure_req_us_df.to_csv(os.path.join("data", "pure_req_user_stories_annotateSS.csv"), index=False)
+    pure_req_us_df.to_json(os.path.join("data", "pure_req_user_stories_annotateSS.json"), index=False)
