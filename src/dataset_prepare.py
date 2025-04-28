@@ -62,47 +62,88 @@ class UserStoriesUsageScenariosMAp:
     usage_scenario_id: str
 
 @dataclass(frozen=True, slots=True)
-class MetadataUsageScenarioMap:
+class MetadataUsageScenariosMap:
     metada_id: str
     usage_scenario_id: str
         
 # pure_req_user_stories_path = os.path.join("data", "pure_req_user_stories.csv")
 # pure_req_us_df = pd.read_csv(pure_req_user_stories_path)
 # cols df: filename,keys,requirement,user story llama-4-maverick,user story llama-3-3-70b,user story llama-3-1-405b,user story dbrx,user story mixtral-8x7b
-class DatasetPrepare:
-    def __init__(self, req_user_stories_dataset, raw_text_doc_path, doc_struct_path, doc_path, pattern=r"As (.*?), I want (.*?) so that (.*?)(?:\.|$)", nlp=spacy.load("en_core_web_sm")):
+class DataPrepare:
+    """
+    Class to prepare data for model training.
+    This class extracts RequirementDocumentation, Metadatas, Requirements, User Stories, and Usage Scenarios from specified directories. It processes and populates dataclass instances and saves them into separate pickle (.pkl) files for later use.
+    """
+
+    def __init__(self, req_user_stories_dataset, raw_text_doc_path, doc_struct_path, doc_path, nlp=spacy.load("en_core_web_sm")):
         self._req_user_stories_dataset = req_user_stories_dataset
         self._raw_text_doc_path = raw_text_doc_path
         self._doc_struct_path = doc_struct_path       
         self._doc_path = doc_path
-        self._pattern = pattern
         self._nlp = nlp
         #self._requeriments_extracted,self._user_stories_extracted, self._usage_scenarios_extracted, self._req_docs_extracted, self._docs_metadatas = self.__get_all_data()
 
-    def _extract_user_story_parts(self, text, requirement_id, req_doc_id, metadata_id):
+    def _extract_text_from_file(self, dir, file):
+        if file.endswith(".txt"):
+            with open(os.path.join(dir, file), "r", encoding="utf-8") as file:
+                logger.debug(f"Extracting text from file: {file}")
+                return file.read()
+        return ""
+    
+    def _extract_user_story_parts(self, text, requirement_id, req_doc_id, metadata_id, pattern=r"As (.*?), I want (.*?) so that (.*?)(?:\.|$)"):
         user_stories = []
 
         logger.debug(f"Extracting user story parts from text: {text}")
         try:
-            matches = list(re.findall(self._pattern, text, re.IGNORECASE))
-            num_matches = len(matches)
+            matches = list(re.findall(pattern, text, re.IGNORECASE))
 
-            for i in range(num_matches):       
-                user_story_datas = {
-                    "id": requirement_id + f"us.{num_matches}",
-                    "text": f"As {matches[i][0]}, I want {matches[i][1]} so that {matches[i][2]}.",             
-                    "type of user": matches[i][0],
-                    "goal": matches[i][1],
-                    "reason": matches[i][2],
+            for i, match in enumerate(matches):       
+                us = {
+                    "id": requirement_id + f"us.{i}",
+                    "text": f"As {match[0]}, I want {match[1]} so that {match[2]}.",             
+                    "type of user": match[0],
+                    "goal": match[1],
+                    "reason": match[2],
                     "requirement_id": requirement_id,
                     "req_doc_id": req_doc_id,
                     "metadata_id": metadata_id
                 }
-                user_stories.append(UserStory(**user_story_datas))
-                
+                user_stories.append(UserStory(**us))
         except IndexError:
             logger.error(f"Error extracting user story parts from text (r'As a (.*?), I want (.*?) so that (.*?)(?:\.|$)'): {text}")
         return user_stories
+
+    def _extract_metadatas(self, file, metadata_doc, req_doc_id):
+        result = []
+        lines = metadata_doc.split("\n")
+        doc_name = " ".join(lines[0].split()[1:])
+        lines = lines[1:]
+
+        for line in lines:
+            if not line:
+                continue
+
+            line = line.split()    
+            key = line[0]
+            text = " ".join(line[1:])
+            
+            metadata_datas = {
+                "id": file + f".{key}",
+                "doc_name": doc_name,
+                "text": text,
+                "req_doc_id": req_doc_id
+            }
+            result.append(Metadata(**metadata_datas))
+
+        return result
+
+    def _extract_usage_scenarios(self):
+        pass
+
+    def _extract_req(self, dir, file):
+        pass
+
+    def _extract_req_doc(self, dir, file):
 
     def _get_dataframe(self):
         logger.debug("Starting the dataset preparation process")
@@ -125,35 +166,6 @@ class DatasetPrepare:
 
         return pure_req_us_df
 
-    def _extract_metadatas(self,  dir, file, metadata_doc, req_doc_id):
-        result = {}
-        lines = metadata_doc.split("\n")
-        doc_name = " ".join(lines[0].split()[1:])
-        lines = lines[1:]
-
-        for line in lines:
-            if not line:
-                continue
-
-            line = line.split()    
-            key = line[0]
-            text = " ".join(line[1:])
-            
-            metadata_datas = {
-                "id": file + f".{key}",
-                "doc_name": doc_name,
-                "text": text,
-                "req_doc_id": req_doc_id
-            }
-        return result
-
-    def _extract_text_from_file(self, dir, file):
-        text = ""
-        if file.endswith(".txt"):
-            with open(os.path.join(dir, file), "r", encoding="utf-8") as file:
-                text += file.read()
-        return text
-    
     def _extract_path_from_file(self, dir, file):
         path = os.path.join(dir, file)
         return path
