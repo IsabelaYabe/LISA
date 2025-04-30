@@ -58,7 +58,7 @@ class ReqUsageScenarioMap:
 
 @dataclass(frozen=True, slots=True)
 class UserStoriesUsageScenariosMAp:
-    user_storie_id: str
+    user_story_id: str
     usage_scenario_id: str
 
 @dataclass(frozen=True, slots=True)
@@ -83,7 +83,21 @@ class DataPrepare:
         self._nlp = nlp
         #self._requeriments_extracted,self._user_stories_extracted, self._usage_scenarios_extracted, self._req_docs_extracted, self._docs_metadatas = self.__get_all_data()
 
-    def _extract_text_from_file(self, dir, file):
+    def _extract_text_from_file(self, dir, file): 
+        """
+        Extracts text from a file. The function checks if the file is a .txt file and reads its content. If the file is not a .txt file, it returns an empty string.
+        The function is used to extract text from files in the specified directory.        
+
+        # Extracts raw text of documentation from the directory data/ReqList_ReqNet_ReqSim/0.1 Raw Text
+        # Extracts requirements from the directory data/ReqList_ReqNet_ReqSim/1.1 ReqLists
+
+        Args:
+            dir str: dir_path
+            file str: file_path
+
+        Returns:
+            str: text content of the file or empty string if the file is not a .txt file.
+        """
         if file.endswith(".txt"):
             with open(os.path.join(dir, file), "r", encoding="utf-8") as file:
                 logger.debug(f"Extracting text from file: {file}")
