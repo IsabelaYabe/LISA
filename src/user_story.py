@@ -1,7 +1,6 @@
 import sys
 import os
 from dataclasses import dataclass, field   
-sys.path.append(os.path.abspath(os.path.join(os.getcwd(), 'src')))
 from logger import logger
 
 @dataclass(frozen=True, slots=True)

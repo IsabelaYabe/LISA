@@ -6,10 +6,30 @@ from dataclasses import dataclass
 import pandas as pd
 import spacy
 import re
-import sys
 import os
-sys.path.append(os.path.abspath(os.path.join(os.getcwd(), 'src')))
 from logger import logger
+
+@dataclass(frozen=True, slots=True)
+class RequirementDocumentation:
+    id: str
+    title: str
+    text: str
+    file_path: str
+    metadata_id: str
+
+@dataclass(frozen=True, slots=True)
+class Requirement:
+    id: str
+    text: str
+    metadata_id: str
+    req_doc_id: str
+
+@dataclass(frozen=True, slots=True)
+class Metadata:
+    id: str
+    doc_name: str
+    text: str
+    req_doc_id: str
 
 @dataclass(frozen=True, slots=True)
 class UserStory:
@@ -22,35 +42,12 @@ class UserStory:
     req_doc_id: str
     metadata_id: str
 
-@dataclass
-class Metadata:
-    id: str
-    doc_name: str
-    text: str
-    req_doc_id: str
-
 @dataclass(frozen=True, slots=True)
 class UsageScenario:
     id: str
     text: str
     req_doc_id: str
         
-@dataclass(frozen=True, slots=True)
-class Requirement:
-    id: str
-    key: str
-    text: str
-    metadata_id: str
-    req_doc_id: str
-
-@dataclass(frozen=True, slots=True)
-class RequirementDocumentation:
-    id: str
-    title: str
-    text: str
-    file_path: str
-    metadata_id: str
-
 @dataclass(frozen=True, slots=True)
 class ReqUsageScenarioMap:
     requirement_id: str
@@ -75,22 +72,23 @@ class DataPrepare:
     This class extracts RequirementDocumentation, Metadatas, Requirements, User Stories, and Usage Scenarios from specified directories. It processes and populates dataclass instances and saves them into separate pickle (.pkl) files for later use.
     """
 
-    def __init__(self, req_user_stories_dataset, raw_text_doc_path, doc_struct_path, doc_path, nlp=spacy.load("en_core_web_sm")):
+    def __init__(self, req_user_stories_dataset, raw_text_doc_dir_path, req_lists_dir_path, doc_struct_dir_path, nlp=spacy.load("en_core_web_sm")):
         self._req_user_stories_dataset = req_user_stories_dataset
-        self._raw_text_doc_path = raw_text_doc_path
-        self._doc_struct_path = doc_struct_path       
-        self._doc_path = doc_path
+        self._raw_text_doc_dir_path = raw_text_doc_dir_path       
+        self._req_lists_dir_path = req_lists_dir_path
+        self._doc_struct_dir_path = doc_struct_dir_path
         self._nlp = nlp
         #self._requeriments_extracted,self._user_stories_extracted, self._usage_scenarios_extracted, self._req_docs_extracted, self._docs_metadatas = self.__get_all_data()
-
+    
     def _extract_text_from_file(self, dir, file): 
         """
         Extracts text from a file. The function checks if the file is a .txt file and reads its content. If the file is not a .txt file, it returns an empty string.
         The function is used to extract text from files in the specified directory.        
 
         # Extracts raw text of documentation from the directory data/ReqList_ReqNet_ReqSim/0.1 Raw Text
-        # Extracts requirements from the directory data/ReqList_ReqNet_ReqSim/1.1 ReqLists
-
+        ## Extracts requirements from the directory data/ReqList_ReqNet_ReqSim/1.1 ReqLists
+        ## data/ReqList_ReqNet_ReqSim/1.3 DocumentStructure - Metadata
+        
         Args:
             dir str: dir_path
             file str: file_path
@@ -142,7 +140,7 @@ class DataPrepare:
             text = " ".join(line[1:])
             
             metadata_datas = {
-                "id": file + f".{key}",
+                "id": "DSM." + file + f".{key}",
                 "doc_name": doc_name,
                 "text": text,
                 "req_doc_id": req_doc_id
@@ -158,7 +156,8 @@ class DataPrepare:
         pass
 
     def _extract_req_doc(self, dir, file):
-
+        pass
+    
     def _get_dataframe(self):
         logger.debug("Starting the dataset preparation process")
         pure_req_us_df = pd.read_csv(self._csv_file)
@@ -204,16 +203,15 @@ class DataPrepare:
         req_docs_extracted = []
         docs_metadatas = []
 
-        req_docs_extracted = self._dir_interable(self._req_doc_path, doc=self._extract_path_from_file)["doc"]
+        req_docs_extracted = self._dir_interable(self._raw_text_doc_dir_path, doc=self._extract_path_from_file)["doc"]
 
-        # Extracting the requirements
-        requeriments_extracted = self._dir_interable(self._req_doc_path, req=self._extract_req)["req"]
+        requeriments_extracted = self._dir_interable(self._req_lists_dir_path, req=self._extract_req)["req"]
         
         docs_metadatas = self._dir_interable(self._docs_metadatas, metadata=self._extract_metadatas)["metadata"]
 
         user_stories_extracted = self._dir_interable(self._raw_text_path, user_stories=self._extract_text_from_file)["user_stories"]
         
-        usage_scenarios_extracted = self._dir_interable(self._doc_struct_path, usage_scenarios=self._extract_text_from_file)["usage_scenarios"]
+        usage_scenarios_extracted = self._dir_interable(self._doc_struct_dir_path, usage_scenarios=self._extract_text_from_file)["usage_scenarios"]
 
         return requeriments_extracted, user_stories_extracted, usage_scenarios_extracted, req_docs_extracted, docs_metadatas
     
@@ -226,8 +224,34 @@ class DataPrepare:
         self._dataframe = value
 
 if __name__ == "__main__":
-    dataset = DatasetPrepare(os.path.join("data", "pure_req_user_stories.csv"))
-    logger.debug("Saving the dataset")
-    pure_req_us_df = dataset.dataframe
+    #dataset = DatasetPrepare(os.path.join("data", "pure_req_user_stories.csv"))
+    #logger.debug("Saving the dataset")
+    #pure_req_us_df = dataset.dataframe
+    #
+    #pure_req_us_df.to_json(os.path.join("data", "pure_req_user_stories_annotateSS.json"), index=False)
+    req_user_stories_dataset = os.path.join("data", "pure_req_user_stories.csv")
+    raw_text_doc_dir_path = os.path.join("data", "ReqList_ReqNet_ReqSim","0.1 Raw Text")
+    req_lists_dir_path = os.path.join("data", "ReqList_ReqNet_ReqSim", "1.1 ReqLists")
+    doc_struct_dir_path = os.path.join("data", "ReqList_ReqNet_ReqSim", "1.3 DocumentStructe - Metadata")
     
-    pure_req_us_df.to_json(os.path.join("data", "pure_req_user_stories_annotateSS.json"), index=False)
+    data_prepare = DataPrepare(req_user_stories_dataset, raw_text_doc_dir_path, req_lists_dir_path, doc_struct_dir_path)
+    
+    
+    file = "file"
+    metadata_doc = """D   POREM APSON Porem
+1   Chitzu Porem
+2   Golden Porem
+2.2 Maki Porem
+3   Bacoz Porem"""
+    req_doc_id = "req_doc_id"
+    
+    metadatas = DataPrepare._extract_metadatas(data_prepare, file, metadata_doc, req_doc_id)
+    
+    logger.debug(f"Metadatas: {metadatas}")
+    logger.debug(f"len(metadatas): {len(metadatas)}")
+    for i in range(len(metadatas)):
+        logger.debug(f"=======")
+        logger.debug(f"Metadatas[0].text: {metadatas[i].text}")
+        logger.debug(f"Metadatas[0].id: {metadatas[i].id}")
+        logger.debug(f"Metadatas[0].doc_name: {metadatas[i].doc_name}")
+    
