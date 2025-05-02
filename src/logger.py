@@ -1,9 +1,6 @@
 import logging
 from logging import Filter
 from logging import FileHandler, StreamHandler, Formatter
-import sys
-import os
-sys.path.append(os.path.abspath(os.path.join(os.getcwd(), 'src')))
 from decorators import singleton
 
 class LogFilter(Filter):

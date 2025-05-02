@@ -4830,3 +4830,11 @@ As an Acquisition Staff member, I want to input a prorate taxes decision and hav
 2025-04-13 01:09:27,991 | ERROR | dataset_prepare:extract_user_story_parts - Error extracting user story parts from text (r'As a (.*?), I want (.*?) so that (.*?)(?:\.|$)'): As the executor of a deceased person's estate or a family member, I want to be able to access and retain a hard copy of their personal retirement documentation for up to 100 years after their passing, so that I can ensure their legacy and financial affairs are properly managed and preserved for historical and potential future reference purposes.
 2025-04-13 01:09:28,278 | ERROR | dataset_prepare:extract_user_story_parts - Error extracting user story parts from text (r'As a (.*?), I want (.*?) so that (.*?)(?:\.|$)'): [ERROR: Error code: 400 - {'error_code': 'BAD_REQUEST', 'message': None}]
 2025-04-13 01:09:28,283 | ERROR | dataset_prepare:extract_user_story_parts - Error extracting user story parts from text (r'As a (.*?), I want (.*?) so that (.*?)(?:\.|$)'): As the primary developer of VUMC, I want to retain all rights and ownership of the software product, including the source code, so that I can control and manage the licensing of the product to third parties while protecting our intellectual property.
+2025-05-02 03:46:28,404 | INFO | logger:<module> - This is an info message
+2025-05-02 03:46:28,404 | WARNING | logger:<module> - This is a warning message
+2025-05-02 03:46:28,404 | ERROR | logger:<module> - This is an error message
+2025-05-02 03:46:28,404 | CRITICAL | logger:<module> - This is a critical message
+2025-05-02 03:46:43,836 | INFO | logger:<module> - This is an info message
+2025-05-02 03:46:43,837 | WARNING | logger:<module> - This is a warning message
+2025-05-02 03:46:43,837 | ERROR | logger:<module> - This is an error message
+2025-05-02 03:46:43,837 | CRITICAL | logger:<module> - This is a critical message
