@@ -1,7 +1,5 @@
 import sys
-sys.path.append(".")
-from src.logger import logger
-#import oi
+from lisa import logger
 
 if __name__ == "__main__":
-    logger.debug("Tudo certo")
+    logger.debug("Its a test")
