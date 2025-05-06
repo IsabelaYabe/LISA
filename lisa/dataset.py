@@ -8,7 +8,7 @@ sys.path.append(os.path.abspath(os.path.join(os.getcwd(), "src")))
 from logger import logger
 from requirement_documentation import RequirementDocumentation
 from requirement import Requirement
-from dataset_prepare import DatasetPrepare
+from lisa.data_prepare import DatasetPrepare
 
 class dataset:
     def __init__(self, csv_file=os.path.join("data", "pure_req_user_stories.csv"), docs_path=os.path.join("data", "ReqList_ReqNet_ReqSim", "0    Requirement Specification Documents"), docs_structure_path=os.path.join("data", "ReqList_ReqNet_ReqSim", "1.3 DocumentStructure - Metadata"), pattern=r"As (.*?), I want (.*?) so that (.*?)(?:\.|$)", nlp=spacy.load("en_core_web_sm")):

@@ -1,7 +1,7 @@
 import logging
 from logging import Filter
 from logging import FileHandler, StreamHandler, Formatter
-from decorators import singleton
+from lisa.decorators import singleton
 
 class LogFilter(Filter):
     """

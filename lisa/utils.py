@@ -1,22 +1,28 @@
 import os
-from logger import logger
+from lisa.logger import logger
 
 def generate_filename_map(directory):
     """
-    Generates a mapping of filenames in a directory.
+    Generates two mappings of filenames in a directory.
 
     Args:
         directory (str): Path to the directory.
 
     Returns:
-        dict: A dictionary where the keys are filenames without extensions and 
-              the values are their respective positions in the directory listing.
+        tuple[dict, dict]: 
+            - filenames_map: keys = names without extensions, values = index
+            - map_filenames: keys = index, values = names without extensions
     """
-    files = os.listdir(directory)
-    filenames = [x[:x.find(".")] for x in files]
-    filenames_map = {v: k for k, v in enumerate(filenames)}
+    filenames_map = {}
+    map_filenames = {}
     
-    return filenames_map    
+    files = sorted(os.listdir(directory))
+    for i, file in enumerate(files):
+        filename = os.path.splitext(file)[0]
+        filenames_map[filename] = str(i)
+        #map_filenames[str(i)] = filename
+        
+    return filenames_map 
 
 if __name__ == "__main__":
     mock_req_doc_raw_path = os.path.join("tests", "mocks", "mock_0_req_doc_raw_text")
