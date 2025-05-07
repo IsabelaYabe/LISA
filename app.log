@@ -4838,3 +4838,51 @@ As an Acquisition Staff member, I want to input a prorate taxes decision and hav
 2025-05-02 03:46:43,837 | WARNING | logger:<module> - This is a warning message
 2025-05-02 03:46:43,837 | ERROR | logger:<module> - This is an error message
 2025-05-02 03:46:43,837 | CRITICAL | logger:<module> - This is a critical message
+2025-05-07 04:43:52,221 | ERROR | data_prepare:__extract_req - Extracting requirement from line: HIT 02.0	"The solution should support the use of the National Provider Identifier (NPI) in the EMR audit log to identify the individual provider, or, in situations when an NPI is not available for an individual, a single unique internal provider identifier is assigned."
+2025-05-07 04:44:25,204 | ERROR | data_prepare:__extract_req - Extracting requirement from line: HIT 02.0	"The solution should support the use of the National Provider Identifier (NPI) in the EMR audit log to identify the individual provider, or, in situations when an NPI is not available for an individual, a single unique internal provider identifier is assigned.", filename: 2012 - EMR HHS
+2025-05-07 05:16:25,409 | ERROR | data_prepare:__get_all_user_stories_from_csv - Error parsing keys 
+ keys[1].replace('D', ''): 0 
+ str(req_doc_id) + '-' + '.'.join(keys[2:-1]): 0-4 
+ str(metadata_id) + '-' + '.'.join(keys[-1]): 0-4-1.0
+2025-05-07 05:17:48,841 | ERROR | data_prepare:__get_all_user_stories_from_csv - Error parsing keys 
+ keys: ['G', 'D0', '4', '10'] 
+ keys[1].replace('D', ''): 0 
+ str(req_doc_id) + '-' + '.'.join(keys[2:-1]): 0-4 
+ str(metadata_id) + '-' + '.'.join(keys[-1]): 0-4-1.0
+2025-05-07 05:18:20,342 | ERROR | data_prepare:__get_all_user_stories_from_csv - Error parsing keys 
+ row['keys']: G.D0.4.10 
+ keys[1].replace('D', ''): 0 
+ str(req_doc_id) + '-' + '.'.join(keys[2:-1]): 0-4 
+ str(metadata_id) + '-' + '.'.join(keys[-1]): 0-4-1.0
+2025-05-07 05:23:52,812 | ERROR | data_prepare:__get_all_user_stories_from_csv - Error parsing keys 
+ row['keys']: G.D0.1.1 
+ keys[1].replace('D', ''): 0 
+ str(req_doc_id) + '-' + '.'.join(keys[2:-1]): 0-1 
+ str(metadata_id) + '-' + '.'.join(keys[-1]): 0-1-1
+2025-05-07 05:27:45,231 | ERROR | data_prepare:__get_all_user_stories_from_csv - Error parsing keys 
+ row['keys']: G.D0.1.1 
+ keys[1].replace('D', ''): 0 
+ str(req_doc_id) + '-' + '.'.join(keys[2:-1]): 0-1 
+ str(metadata_id) + '-' + '.'.join(keys[-1]): 0-1-1
+2025-05-07 05:28:35,886 | ERROR | data_prepare:__get_all_user_stories_from_csv - Error parsing keys 
+ row['keys']: G.D0.1.1 
+ keys[1].replace('D', ''): 0 
+ str(req_doc_id) + '-' + '.'.join(keys[2:-1]): 0-1 
+ str(metadata_id) + '-' + '.'.join(keys[-1]): 0-1-1
+2025-05-07 05:29:47,473 | ERROR | data_prepare:__get_all_user_stories_from_csv - Error parsing keys 
+ row['keys']: G.D0.4.10 
+ keys[1].replace('D', ''): 0 
+ str(req_doc_id) + '-' + '.'.join(keys[2:-1]): 0-4 
+ str(metadata_id) + '-' + '.'.join(keys[-1]): 0-4-1.0
+2025-05-07 05:31:12,004 | ERROR | data_prepare:__get_all_user_stories_from_csv - Error parsing keys 
+ row['keys'].split(): ['G.D0.4.10'] 
+ row['keys']: G.D0.4.10 
+ keys[1].replace('D', ''): 0 
+ str(req_doc_id) + '-' + '.'.join(keys[2:-1]): 0-4 
+ str(metadata_id) + '-' + '.'.join(keys[-1]): 0-4-1.0
+2025-05-07 05:31:51,457 | ERROR | data_prepare:__get_all_user_stories_from_csv - Error parsing keys 
+ row['keys'].split('.'): ['G', 'D0', '4', '10'] 
+ row['keys']: G.D0.4.10 
+ keys[1].replace('D', ''): 0 
+ str(req_doc_id) + '-' + '.'.join(keys[2:-1]): 0-4 
+ str(metadata_id) + '-' + '.'.join(keys[-1]): 0-4-1.0
