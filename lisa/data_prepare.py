@@ -440,7 +440,7 @@ if __name__ == "__main__":
     
     data_prepare.df_requirements.to_csv(os.path.join("data", "df", "df_requirements.csv"), index=False)
     data_prepare.df_user_stories.to_csv(os.path.join("data", "df", "df_user_stories.csv"), index=False)
-    data_prepare.df_metadata.to_csv(os.path.join("data", "df", "df_metadata.csv"), index=False)
+    data_prepare.df_metadata.to_csv(os.path.join("data", "df", "df_metadatas.csv"), index=False)
     data_prepare.df_req_docs.to_csv(os.path.join("data", "df", "df_req_docs.csv"), index=False)
     
     # data_prepare.df_usage_scenarios.to_csv(os.path.join("data", "df", "df_usage_scenarios.csv"), index=False))
