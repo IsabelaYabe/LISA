@@ -1,20 +1,6 @@
 import logging
-from logging import Filter
 from logging import FileHandler, StreamHandler, Formatter
 from lisa.decorators import singleton
-
-class LogFilter(Filter):
-    """
-    LogFilter class.
-
-    This class defines a filter for log messages that excludes messages starting with the word "password".
-    It helps to avoid logging sensitive information.
-
-    Methods:
-        - filter(record): Returns True if the message does not start with "password", False otherwise.
-    """
-    def filter(self, record):
-        return not record.msg.lower().startswith("password")
 
 @singleton
 class CustomLogger:
@@ -28,42 +14,36 @@ class CustomLogger:
         The CustomLogger class supports:
         - Configurable log level and log file name.
         - Separate console and file handlers to manage logging outputs.
-        - A LogFilter to exclude messages that start with sensitive information like "password".
-        - The ability to add additional handlers and filters as needed.
 
         Attributes:
             log_file (str): The path to the file where log messages are saved.
             level (int): The default logging level for console output.
             logger (Logger): The main logger instance created for logging messages.
             handlers (list): A list of logging handlers, such as file and console handlers.
-            filters (list): A list of filters to apply to logging messages.
 
         Methods:
             _create_file_handler: Sets up the file handler with specific formatting and logging level.
             _create_console_handler: Sets up the console handler with specific formatting and logging level.
             add_handler: Adds an external logging handler to the logger.
-            add_filter: Adds an external filter to the logger.
-            _setup_logger: Initializes the logger with all specified handlers and filters.
+            _setup_logger: Initializes the logger with all specified handlers.
             get_logger: Returns the logger instance for use in other modules.
 
         Helper Function:
             setup_logger(): Returns an instance of CustomLogger's logger for convenient access to a pre-configured logger.
     """
-    def __init__(self, log_file="app.log", level=logging.DEBUG, handlers=None, filters=None):
+    def __init__(self, log_file="app.log", level=logging.DEBUG, handlers=None):
         """
-        Initializes the CustomLogger instance with specified file path, log level, handlers, and filters.
+        Initializes the CustomLogger instance with specified file path, log level, handlers.
 
         Args:
             log_file (str): The path to the file where log messages are saved. Default is "app.log".
             level (int): The default logging level for console output. Default is logging.DEBUG.
             handlers (list, optional): Custom handlers for the logger. If None, default file and console handlers are used.
-            filters (list, optional): Custom filters for the logger. If None, a default LogFilter is applied.
         """
         self.log_file = log_file
         self.level = level
         self.logger = logging.getLogger(__name__)
         self.handlers = handlers or [self._create_file_handler(), self._create_console_handler()]
-        self.filters = filters or [LogFilter()]
         self._setup_logger()
 
     def _create_file_handler(self):
@@ -109,23 +89,12 @@ class CustomLogger:
         """
         self.logger.addHandler(handler)
 
-    def add_filter(self, filter):
-        """
-        Adds an external filter to the logger.
-
-        Args:
-            filter (logging.Filter): The filter to be added to the logger.
-        """
-        self.logger.addFilter(filter)
-
     def _setup_logger(self):
         """
-        Sets up the logger by adding all specified handlers and filters, and setting the logging level.
+        Sets up the logger by adding all specified handlers and setting the logging level.
         """
         for handler in self.handlers:
             self.add_handler(handler)
-        for filter in self.filters:
-            self.add_filter(filter)
         self.logger.setLevel(self.level)
 
     def get_logger(self):
