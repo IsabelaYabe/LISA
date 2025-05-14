@@ -161,7 +161,7 @@ class DataPrepare:
                     
             text = " ".join(tokens[1:])
             metadata_id = self._id_generator.generate_metadata_id(filename, metadata_key)
-            
+            #logger.debug(f"Extrating id metadata: metadata_id: {metadata_id}, metadata_parts: {metadata_id.id} and {metadata_id.requirement_documentation_key}, type: {type(metadata_id)}")
             metadata_datas = {
                 "id": metadata_id,
                 "doc_name": doc_name,
@@ -270,7 +270,7 @@ class DataPrepare:
                 text = file.read()
             
             req_docs.append(RequirementDocumentation(id=id, filename=filename, text=text))
-            logger.debug(f"Extracted requirement documentation from file {file}")
+            #logger.debug(f"Extracted requirement documentation from file {file}")
         
         return req_docs
     
@@ -351,7 +351,7 @@ class DataPrepare:
     def __extract_user_stories_usage_scenarios_map(self):
         pass
 
-    def __get_dataframe_from(self, data_list: List[object]) -> pd.DataFrame:
+    def __get_dataframe_from(self, data_list: List[object], save_as_string: bool = False) -> pd.DataFrame:
         """
         Converts a list of dataclass instances into a pandas DataFrame.
         
@@ -366,7 +366,9 @@ class DataPrepare:
             row = {}
             for field in obj.__dataclass_fields__:
                 value = getattr(obj, field)
-                row[field] = str(value)
+                if save_as_string:
+                    value = str(value)
+                row[field] = value
                 
             list_of_dicts.append(row)
         return pd.DataFrame(list_of_dicts)
@@ -438,12 +440,12 @@ if __name__ == "__main__":
     
     data_prepare = DataPrepare(req_user_stories_dataset_path, raw_text_doc_dir_path, doc_struct_dir_path,req_lists_dir_path, id_generator=IDGenerator(raw_text_doc_dir_path))
     
-    data_prepare.df_requirements.to_csv(os.path.join("data", "df", "df_requirements.csv"), index=False)
-    data_prepare.df_user_stories.to_csv(os.path.join("data", "df", "df_user_stories.csv"), index=False)
-    data_prepare.df_metadata.to_csv(os.path.join("data", "df", "df_metadatas.csv"), index=False)
-    data_prepare.df_req_docs.to_csv(os.path.join("data", "df", "df_req_docs.csv"), index=False)
+    data_prepare.df_requirements.to_pickle(os.path.join("data", "df", "df_requirements.pkl"))
+    data_prepare.df_user_stories.to_pickle(os.path.join("data", "df", "df_user_stories.pkl"))
+    data_prepare.df_metadata.to_pickle(os.path.join("data", "df", "df_metadatas.pkl"))
+    data_prepare.df_req_docs.to_pickle(os.path.join("data", "df", "df_req_docs.pkl"))
     
-    # data_prepare.df_usage_scenarios.to_csv(os.path.join("data", "df", "df_usage_scenarios.csv"), index=False))
-    # data_prepare.df_metadata_usage_scenarios_map.to_csv(os.path.join("data", "df", "df_metadata_usage_scenarios_map.csv"), index=False))
-    # data_prepare.df_req_usage_scenarios_map.to_csv(os.path.join("data", "df", "df_req_usage_scenarios_map.csv"), index=False))
-    # data_prepare.df_user_stories_usage_scenarios_map.to_csv(os.path.join("data", "df", "df_user_stories_usage_scenarios_map.csv"), index=False))
+    # data_prepare.df_usage_scenarios.to_pickle(os.path.join("data", "df", "df_usage_scenarios.pkl")))
+    # data_prepare.df_metadata_usage_scenarios_map.to_pickle(os.path.join("data", "df", "df_metadata_usage_scenarios_map.pkl")))
+    # data_prepare.df_req_usage_scenarios_map.to_pickle(os.path.join("data", "df", "df_req_usage_scenarios_map.pkl")))
+    # data_prepare.df_user_stories_usage_scenarios_map.to_pickle(os.path.join("data", "df", "df_user_stories_usage_scenarios_map.pkl")))

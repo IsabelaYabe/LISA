@@ -265,14 +265,14 @@ order to make modification if h e is authorised to do it.
 5.3.1.  all fields of an edited asset can be modified  except Ids  
 5.3.2.  a bulk entry file can be used  
  
-5.4. Adding inventory   assets   
+5.4. Adding inventory assets   
 5.4.1.  Any DA group member or authorised  inventory group member asset is 
 owned by the department  
 5.4.2.  Any faculty member can add all related departments inventory   
 5.4.3.  Any university group member can add all assets in the inventory   
 5.4.4.  A bulk entry can be used to add many assets  
  
-5.5. Creating request to borrow an asset  or a reserve a location   
+5.5. Creating request to borrow an asset or a reserve a location   
 5.5.1.  request can be made by any authorised user   
 5.5.2.  After creation a request still pending waiting to be approved by an 
 administrativ e level user according to that have this authority   
