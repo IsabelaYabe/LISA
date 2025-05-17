@@ -1,14 +1,14 @@
 # vou produzir com ia generativa um dataset de cenários de usos
 # em seguida vou produzir um modelo de ia generativa para gerar requisitos, aqui devemos retornar um modelo de clusterização para separar os requisitos
 # e depois um modelo de ia generativa para gerar requisitos
-from typing import List, Union
+from typing import List
 from dataclasses import dataclass, asdict 
 import pandas as pd
 import spacy
 import re
 import os
-from lisa.logger import logger
-from lisa.id_generator import RequirementDocumentationID, MetadataID, RequirementID, UserStoryID, UsageScenarioID, ModelGeneratorID, ClusterID, IDGenerator
+from lisa.sub_lisa.logger import logger
+from lisa.sub_lisa.id_generator import RequirementDocumentationID, SectionID, RequirementID, UserStoryID, UsageScenarioID, ModelGeneratorID, ClusterID, IDGenerator
 
 @dataclass(frozen=True, slots=True)
 class RequirementDocumentation:
@@ -17,8 +17,8 @@ class RequirementDocumentation:
     text: str
 
 @dataclass(frozen=True, slots=True)
-class Metadata:
-    id: MetadataID
+class Section:
+    id: SectionID
     doc_name: str
     text: str
     req_doc_id: RequirementDocumentationID
@@ -27,7 +27,7 @@ class Metadata:
 class Requirement:
     id: RequirementID
     text: str
-    metadata_id: MetadataID
+    section_id: SectionID
     req_doc_id: RequirementDocumentationID
 
 @dataclass(frozen=True, slots=True)
@@ -38,7 +38,7 @@ class UserStory:
     goal: str
     reason: str
     req_doc_id: RequirementDocumentationID
-    metadata_id: MetadataID
+    section_id: SectionID
     requirement_id: RequirementID
     
 @dataclass(frozen=True, slots=True)
@@ -48,8 +48,8 @@ class UsageScenario:
     req_doc_id: RequirementDocumentationID
         
 @dataclass(frozen=True, slots=True)
-class MetadataUsageScenariosMap:
-    metada_id: MetadataID
+class SectionUsageScenariosMap:
+    metada_id: SectionID
     usage_scenario_id: UsageScenarioID
     
 @dataclass(frozen=True, slots=True)
@@ -68,7 +68,7 @@ class UserStoriesUsageScenariosMap:
 class DataPrepare:
     """
     Class to prepare data for model training.
-    This class extracts RequirementDocumentation, Metadatas, Requirements, User Stories, and Usage Scenarios from specified directories. It processes and populates dataclass instances and saves them into separate pickle (.pkl) files for later use.
+    This class extracts RequirementDocumentation, Sections, Requirements, User Stories, and Usage Scenarios from specified directories. It processes and populates dataclass instances and saves them into separate pickle (.pkl) files for later use.
     """
 
     # req_doc_id_keys = generate_filename_map(os.path.join("data", "ReqList_ReqNet_ReqSim", "0.1 Raw Text"))
@@ -86,9 +86,27 @@ class DataPrepare:
         self._nlp = nlp
         self._df_requirements = None
         self._df_user_stories = None
-        self._df_metadata = None
+        self._df_section = None
         self._df_req_docs = None
-
+        
+    def __normalize_text(self, text: str) -> str:
+        """
+        Normalizes the text by removing unwanted characters and extra spaces.
+        Args:
+            text (str): The input text to be normalized.
+        
+        Returns:
+            str: The normalized text.
+        """
+        text = text.replace("\u00A0", " ")  
+        text = text.replace("\u200B", "")   
+        text = text.replace("\u200C", "")   
+        text = text.replace("\u200D", "")   
+        text = text.replace("\uFEFF", "")
+        text = re.sub(r'[ \t]+', ' ', text)  
+        text = re.sub(r'\r\n?', '\n', text)     
+        
+        return text.strip()
         
     def __extract_req(self, requirement_file: str, filename: str) -> List[Requirement]:
         """
@@ -102,7 +120,8 @@ class DataPrepare:
             List[Requirement]: A list of extracted Requirement instances.
         """  
         result = []
-        lines = requirement_file.split("\n")
+        lines = self.__normalize_text(requirement_file).split("\n")
+        
         for line in lines:
             if not line.strip():
                 continue
@@ -112,41 +131,41 @@ class DataPrepare:
             text = " ".join(tokens[1:])
             
             try:
-                metadata_key = ".".join(key_parts[:-1])
+                section_key = ".".join(key_parts[:-1])
                 requirement_key = int(key_parts[-1])
             except ValueError:
                 logger.error(f"Extracting requirement from line: {line}, filename: {filename}") 
                 raise ValueError(f"Invalid key format in key_parts: {key_parts}")
             
-            metadata_id = self._id_generator.generate_metadata_id(filename, metadata_key)
-            req_id = self._id_generator.generate_requirement_id(metadata_id, requirement_key)
+            section_id = self._id_generator.generate_section_id(filename, section_key)
+            req_id = self._id_generator.generate_requirement_id(section_id, requirement_key)
             req_doc_id = self._id_generator.generate_requirement_documentation_id(filename)
             
             requeriment_datas = {
                 "id": req_id,
                 "text": text,
-                "metadata_id": metadata_id,
+                "section_id": section_id,
                 "req_doc_id": req_doc_id 
             }
             result.append(Requirement(**requeriment_datas))
         return result
     
-    def __extract_metadatas(self, metadata_file: str, filename: str) -> List[Metadata]:
+    def __extract_sections(self, section_file: str, filename: str) -> List[Section]:
         """
-        Extracts metadatas from a metadata file content.
+        Extracts sections from a section file content.
 
         Args:
-            metadata_file (str): Text content of the metadata file.
+            section_file (str): Text content of the section file.
             filename (str): Name of the file without extension.
 
         Returns:
-            List[Metadata]: A list of extracted Metadata instances.
+            List[Section]: A list of extracted Section instances.
         """
         result = []
-        lines = metadata_file.split("\n")
+        lines = section_file.split("\n")
+        lines = self.__normalize_text(section_file).split("\n")
         doc_name = " ".join(lines[0].split()[1:])
         lines = lines[1:]
-        
         req_doc_id = self._id_generator.generate_requirement_documentation_id(filename)
         
         for line in lines:
@@ -155,20 +174,19 @@ class DataPrepare:
 
             tokens = line.split()  
             try:  
-                metadata_key = str(tokens[0])
+                section_key = str(tokens[0])
             except ValueError:
                 raise ValueError(f"Invalid key format in tokens: {tokens[0]}")
                     
             text = " ".join(tokens[1:])
-            metadata_id = self._id_generator.generate_metadata_id(filename, metadata_key)
-            #logger.debug(f"Extrating id metadata: metadata_id: {metadata_id}, metadata_parts: {metadata_id.id} and {metadata_id.requirement_documentation_key}, type: {type(metadata_id)}")
-            metadata_datas = {
-                "id": metadata_id,
+            section_id = self._id_generator.generate_section_id(filename, section_key)
+            section_datas = {
+                "id": section_id,
                 "doc_name": doc_name,
                 "text": text,
                 "req_doc_id": req_doc_id
             }
-            result.append(Metadata(**metadata_datas))
+            result.append(Section(**section_datas))
 
         return result
     
@@ -178,7 +196,7 @@ class DataPrepare:
         model_generator_id: ModelGeneratorID,
         requirement_id: RequirementID,
         req_doc_id: RequirementDocumentationID,
-        metadata_id: MetadataID,
+        section_id: SectionID,
         pattern: str = r"As (.*?), I want (.*?) so that (.*?)(?:\.|$)"
     ) -> List[UserStory]:
         """
@@ -189,7 +207,7 @@ class DataPrepare:
             us_req_id (int): A unique suffix identifier for the user story within a requirement.
             requirement_id (RequirementID): The ID of the associated requirement.
             req_doc_id (RequirementDocumentationID): The ID of the document the requirement belongs to.
-            metadata_id (MetadataID): The ID of the metadata associated with the requirement.
+            section_id (SectionID): The ID of the section associated with the requirement.
             pattern (str, optional): Regex pattern to match user stories.
 
         Returns:
@@ -213,7 +231,7 @@ class DataPrepare:
                     "reason": match[2],
                     "requirement_id": requirement_id,
                     "req_doc_id": req_doc_id,
-                    "metadata_id": metadata_id
+                    "section_id": section_id
                 }
                 user_stories.append(UserStory(**user_story))
         
@@ -241,10 +259,12 @@ class DataPrepare:
             path = os.path.join(self._req_lists_dir_path, file)
             with open(path, "r", encoding="utf-8") as file:
                 requirement_file = file.read()
+                text = file.read()            
+                text = self.__normalize_text(text)
+
                 requirements = self.__extract_req(requirement_file, filename)
                 
             requeriments.extend(requirements)
-            logger.debug(f"Extracted {len(requirements)} requirements from file {file}")
         
         return requeriments
 
@@ -268,20 +288,20 @@ class DataPrepare:
             path = os.path.join(self._raw_text_doc_dir_path, file)
             with open(path, "r", encoding="utf-8") as file:
                 text = file.read()
-            
+                text = self.__normalize_text(text)
+
             req_docs.append(RequirementDocumentation(id=id, filename=filename, text=text))
-            #logger.debug(f"Extracted requirement documentation from file {file}")
         
         return req_docs
     
-    def __get_all_metadatas_from_dir(self) -> List[Metadata]:
+    def __get_all_sections_from_dir(self) -> List[Section]:
         """
-        Extracts all metadata from the directory self._doc_struct_dir_path.
+        Extracts all section from the directory self._doc_struct_dir_path.
         
         Returns:
-            List[Metadata]: List of Metadata objects.
+            List[Section]: List of Section objects.
         """
-        metadatas = []
+        sections = []
         for file in sorted(os.listdir(self._doc_struct_dir_path)):
             split_file = os.path.splitext(file)
             filename = split_file[0]
@@ -292,13 +312,12 @@ class DataPrepare:
             
             path = os.path.join(self._doc_struct_dir_path, file)
             with open(path, "r", encoding="utf-8") as file:
-                metadata_file = file.read()
+                section_file = file.read()
             
-            metadatas_from_file = self.__extract_metadatas(metadata_file, filename)
+            sections_from_file = self.__extract_sections(section_file, filename)
                 
-            metadatas.extend(metadatas_from_file)
-            logger.debug(f"Extracted {len(metadatas_from_file)} metadatas from file {file}")
-        return metadatas
+            sections.extend(sections_from_file)
+        return sections
     
     def __get_all_user_stories_from_csv(self) -> List[UserStory]:
         """
@@ -315,8 +334,8 @@ class DataPrepare:
             
             try:
                 req_doc_id = RequirementDocumentationID.from_str(keys[1].replace("D", ""))
-                metadata_id = MetadataID.from_str(str(req_doc_id) + "-" + ".".join(keys[2:-1]))
-                requirement_id = RequirementID.from_str(str(metadata_id) + "-" + keys[-1])
+                section_id = SectionID.from_str(str(req_doc_id) + "-" + ".".join(keys[2:-1]))
+                requirement_id = RequirementID.from_str(str(section_id) + "-" + keys[-1])
 
                 for i, col in enumerate(pure_req_us_df.columns[3:]):
                     if pd.isna(row[col]):
@@ -331,7 +350,7 @@ class DataPrepare:
                             model_generator_id, 
                             requirement_id, 
                             req_doc_id, 
-                            metadata_id
+                            section_id
                             )
                         )
             except Exception as e:
@@ -342,7 +361,7 @@ class DataPrepare:
     def __extract_usage_scenarios(self):
         pass
     
-    def __extract_metadata_usage_scenarios_map(self):
+    def __extract_section_usage_scenarios_map(self):
         pass
     
     def __extract_req_usage_scenarios_map(self):
@@ -366,6 +385,8 @@ class DataPrepare:
             row = {}
             for field in obj.__dataclass_fields__:
                 value = getattr(obj, field)
+                if field == "text":
+                    value = str(value)
                 if save_as_string:
                     value = str(value)
                 row[field] = value
@@ -394,10 +415,10 @@ class DataPrepare:
         return self._df_user_stories
 
     @property
-    def df_metadata(self) -> pd.DataFrame:
-        if self._df_metadata is None:
-            self._df_metadata = self.__get_dataframe_from(self.__get_all_metadatas_from_dir())
-        return self._df_metadata
+    def df_section(self) -> pd.DataFrame:
+        if self._df_section is None:
+            self._df_section = self.__get_dataframe_from(self.__get_all_sections_from_dir())
+        return self._df_section
 
     @property
     def df_req_docs(self) -> pd.DataFrame:
@@ -412,10 +433,10 @@ class DataPrepare:
         return self._df_usage_scenarios
     
     @property
-    def df_metadata_usage_scenarios_map(self) -> pd.DataFrame:
-        if self._df_metadata_usage_scenarios_map is None:
-            self._df_metadata_usage_scenarios_map = self.__get_dataframe_from(self.__extract_metadata_usage_scenarios_map())
-        return self._df_metadata_usage_scenarios_map
+    def df_section_usage_scenarios_map(self) -> pd.DataFrame:
+        if self._df_section_usage_scenarios_map is None:
+            self._df_section_usage_scenarios_map = self.__get_dataframe_from(self.__extract_section_usage_scenarios_map())
+        return self._df_section_usage_scenarios_map
     
     @property
     def df_req_usage_scenarios_map(self) -> pd.DataFrame:
@@ -430,22 +451,22 @@ class DataPrepare:
         return self._df_user_stories_usage_scenarios_map"""
         
 if __name__ == "__main__":
-    from lisa.utils import generate_filename_map
+    from lisa.sub_lisa.utils import generate_filename_map
     
     req_user_stories_dataset_path = os.path.join("data", "pure_req_user_stories.csv")
     raw_text_doc_dir_path = os.path.join("data", "ReqList_ReqNet_ReqSim","0.1 Raw Text")
-    doc_struct_dir_path = os.path.join("data", "ReqList_ReqNet_ReqSim", "1 DocumentStructure - Metadata")
+    doc_struct_dir_path = os.path.join("data", "ReqList_ReqNet_ReqSim", "1 Section")
     req_lists_dir_path = os.path.join("data", "ReqList_ReqNet_ReqSim", "2 ReqLists")
     req_doc_id_keys = generate_filename_map(raw_text_doc_dir_path)
     
-    data_prepare = DataPrepare(req_user_stories_dataset_path, raw_text_doc_dir_path, doc_struct_dir_path,req_lists_dir_path, id_generator=IDGenerator(raw_text_doc_dir_path))
+    data_prepare = DataPrepare(req_user_stories_dataset_path, raw_text_doc_dir_path, doc_struct_dir_path,req_lists_dir_path, id_generator = IDGenerator(raw_text_doc_dir_path))
     
     data_prepare.df_requirements.to_pickle(os.path.join("data", "df", "df_requirements.pkl"))
     data_prepare.df_user_stories.to_pickle(os.path.join("data", "df", "df_user_stories.pkl"))
-    data_prepare.df_metadata.to_pickle(os.path.join("data", "df", "df_metadatas.pkl"))
+    data_prepare.df_section.to_pickle(os.path.join("data", "df", "df_sections.pkl"))
     data_prepare.df_req_docs.to_pickle(os.path.join("data", "df", "df_req_docs.pkl"))
     
     # data_prepare.df_usage_scenarios.to_pickle(os.path.join("data", "df", "df_usage_scenarios.pkl")))
-    # data_prepare.df_metadata_usage_scenarios_map.to_pickle(os.path.join("data", "df", "df_metadata_usage_scenarios_map.pkl")))
+    # data_prepare.df_section_usage_scenarios_map.to_pickle(os.path.join("data", "df", "df_section_usage_scenarios_map.pkl")))
     # data_prepare.df_req_usage_scenarios_map.to_pickle(os.path.join("data", "df", "df_req_usage_scenarios_map.pkl")))
     # data_prepare.df_user_stories_usage_scenarios_map.to_pickle(os.path.join("data", "df", "df_user_stories_usage_scenarios_map.pkl")))
