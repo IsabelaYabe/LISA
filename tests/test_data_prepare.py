@@ -1,7 +1,7 @@
 import os
 import json
 import unittest 
-from lisa.utils import generate_filename_map
+from lisa.sub_lisa.utils import generate_filename_map
 from lisa.data_prepare import DataPrepare, RequirementDocumentation, Requirement, Metadata, UserStory, UsageScenario, ReqUsageScenarioMap, UserStoriesUsageScenariosMap, MetadataUsageScenariosMap
 
 class TestDataPrepare(unittest.TestCase):

@@ -3,112 +3,85 @@ import nltk
 import re
 nltk.download("punkt")
 from nltk.tokenize import sent_tokenize
-from lisa.logger import logger
+from lisa.sub_lisa.logger import logger
+from lisa.data_prepare import RequirementDocumentation, Section, Requirement, UserStory, UsageScenario
+from typing import List
+from lisa.sub_lisa.utils import find_new_section
+
+def get_line_number(text: str, char_index: int) -> int:
+    return text[:char_index].count('\n') + 1
 
 class Chunker:
-    def __init__(self, requirement_documentation_dataframe: pd.DataFrame, metadata_dataframe: pd.DataFrame):
+    def __init__(self, requirement_documentation_dataframe: pd.DataFrame, section_dataframe: pd.DataFrame):
         self.requirement_documentation_dataframe = requirement_documentation_dataframe
-        self.metadata_dataframe = metadata_dataframe
+        self.section_dataframe = section_dataframe
         
-    def find_section(self, text_document, section):
+    def find_section(self, document_text: str, section_text: str, section_key: str) -> int:
+        """
+        Find the section in the text document based on the section.
         
-    def chunk_por_section(self):    
-        stop = True    
-        stop0 = True
+        Args:
+            document_text (str): The text document to search in.
+            section_text (str): The section text containing the section information.
+        
+        Returns:
+            int: The starting index of the section line in the document.  
+        """
+        matches = find_new_section(document_text, section_text, section_key)
+        
+        n = len(matches)
+        if n != 1:
+            if n == 0:
+                logger.error(f"Error dont matches: {section_text}")
+            else:
+                logger.error(f"Error are {n} matches: {section_text}")
+            raise ValueError(f"Section founded error: {section_text}")
+        
+        return matches[0].start()
+        
+    def chunk_for_section(self):    
         chunks = []
-        
-        for i, row in self.requirement_documentation_dataframe.iterrows():
-            id_document = row["id"]
-            filename_document = row["filename"]
-            text_document = row["text"]    
-        
-            metadatas = self.metadata_dataframe[self.metadata_dataframe["req_doc_id"] == id_document]
-            sections = metadatas.to_dict()
-        
-            if not sections:
-                raise ValueError(f"Id not found: {id}")
+        sections_len = 0 # retirar
+        for i, row_document in self.requirement_documentation_dataframe.iterrows():
+            logger.debug(f"Começando novo documento: {i}")
+            id_document = row_document["id"]
+            document_text = row_document["text"]    
+            sections = self.section_dataframe[self.section_dataframe["req_doc_id"] == id_document] 
+            if sections.empty:
+                raise ValueError(f"req_doc_id not found: {id_document}")
             
             section_starts = []
-            ids_section = list(sections["id"].values())
-            sections = list(sections["text"].values())
+            section_ids = []
+            for _, section in sections.iterrows():
+                sections_len+=1 # retirar
+                logger.info(f"NEW SECTION!!!")
+                start_section = self.find_section(document_text, document_text, str(section["id"].id))
+                section_starts.append(start_section) # tenho que colocar o início da linha
+                section_ids.append(section["id"])
+
+            section_pairs =sorted(zip(section_ids, section_starts), key=lambda x: x[1])
             
-            for i, section in enumerate(sections):
-                fullname_section = f"{ids_section[i].id}. {section}"
-                logger.debug(f"fullname_section: {fullname_section}")
+            for idx in range(len(section_starts)):
+                section_id, start = section_pairs[idx]
+                end = section_pairs[idx + 1][1] if idx + 1 < len(section_pairs) else len(document_text)
+                chunk_text = document_text[start:end]
                 
-                pattern = r"^\s*" + re.escape(fullname_section.strip()) + r"\s*$"
-
-                matches = list(re.finditer(pattern, text_document, re.MULTILINE))
-                len_matches = len(matches)
+                chunks.append({
+                    "req_doc_id": id_document,
+                    "section_id": section_id,
+                    "text": chunk_text.strip()
+                })
+        
+        return chunks
                 
-                if len_matches == 0:
-                    pattern = r"^" + re.escape(section.strip()) + r"$"
-                    matches = list(re.finditer(pattern, text_document))
-                    len_matches = len(matches)
-                    if len_matches == 0:
-                        logger.error(f"Section not found: {section}")
-                        raise ValueError(f"Section not found: {section}")
                 
-                #matches = list(re.finditer(r"\b" + re.escape(section) + r"\b", text_document))
-                len_matches = len(matches)
-                
-                if len_matches == 0:
-                    logger.error(f"Section not found: {section}")
-                    raise ValueError(f"Section not found: {section}")
-                elif len_matches == 2:
-                    logger.debug(f"id_document: {id_document}")
-                    logger.debug([m.group() for m in matches])
-                    second_start = matches[1].start()
-                    logger.debug(f"second_start: {second_start}")
-                elif len_matches > 2:
-                    logger.debug(f"id_document: {id_document}")
-                    logger.debug(f"section: {section}")
-                    logger.error(f"Multiple matches found for section: {section}")
-                    raise ValueError(f"Multiple matches found for section: {section}")
-                else:    
-                    start_section = text_document.find(section)
-                
-                #if start_section != -1:
-                #    section_starts.append(start_section)
-                #else:
-                    
-                #    logger.debug(f"id_document: {id_document}")
-                    
-                #    logger.warning(f"Section not found: {section}")
-                    
-                #    raise ValueError(f"Section not found: {section}")
-
-            #section_starts.sort(key=lambda x: x)
-            
-            #for i, section in enumerate(section_starts):
-            #    if i == 0:
-            #        new_chunk = text_document[:start_section]
-            #        chunks.append(new_chunk)
-            #    
-            #    if section != section_starts[-1]:
-            #        next_section = section_starts[i+1] 
-            #        new_chunk = text_document[start_section:next_section]
-            #        chunks.append(new_chunk)                   
-            #        text_document = text_document[next_section:]
-            #    else:
-            #        new_chunk = text_document[start_section:]
-            #        chunks.append(new_chunk)
-                      
-                              
-        #for doc in self.requirement_documentation_dataframe:
-        #    separadores = []
-        #    doc_id = doc.id
-        #    for metadata in self.metadata_dataframe:
-        #        if doc_id == metadata.id:
-        #            separadores.append(metadata.separador)
-
 if __name__ == "__main__":
-    from lisa.data_prepare import RequirementDocumentation, Metadata
+    from lisa.data_prepare import RequirementDocumentation, Section
     import os
     raw_text_doc_dir_path = os.path.join("data", "df", "df_req_docs.pkl")      
-    doc_struct_dir_path = os.path.join("data", "df", "df_metadatas.pkl")   
+    doc_struct_dir_path = os.path.join("data", "df", "df_sections.pkl")   
     
     df_req_docs = pd.read_pickle(raw_text_doc_dir_path)
-    df_metadatas = pd.read_pickle(doc_struct_dir_path)
-    chunker = Chunker(df_req_docs, df_metadatas)
-    chunker.chunk_por_section()        
+    df_sections = pd.read_pickle(doc_struct_dir_path)
+    chunker = Chunker(df_req_docs, df_sections)
+    chunker.chunk_for_section()        

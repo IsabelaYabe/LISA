@@ -7,7 +7,7 @@ import pandas as pd
 import spacy
 import re
 import os
-from lisa.logger import logger
+from lisa.sub_lisa.logger import logger
 
 @dataclass(frozen=True, slots=True)
 class RequirementDocumentation:
@@ -374,7 +374,7 @@ class DataPrepare:
         return self._df_user_stories_usage_scenarios_map"""
         
 if __name__ == "__main__":
-    from lisa.utils import generate_filename_map
+    from lisa.sub_lisa.utils import generate_filename_map
     
     req_user_stories_dataset = os.path.join("data", "pure_req_user_stories.csv")
     raw_text_doc_dir_path = os.path.join("data", "ReqList_ReqNet_ReqSim","0.1 Raw Text")
