@@ -14378,3 +14378,147 @@ E-Governance Mission Mode Project: Crime & Criminal s Tracking Network and Syste
 Ministry of Home Affairs Draft Core Scope Document Page 19 of 19 frequently used searches 
 i) Database Indexes should be applied on the key column s used for searching'
 2025-05-16 20:39:18,511 | WARNING | utils:find_new_section - Segunda avaliação: nenhuma ocorrencia foi inserida com reviewed_completed_line
+2025-05-27 02:06:10,001 | ERROR | web_driver_config:<module> - Erro ao executar scraping: 'IEEESources' object has no attribute '_headless'
+2025-05-27 02:07:19,535 | ERROR | web_driver_config:<module> - Erro ao executar scraping: Message: unknown error: cannot find Chrome binary
+Stacktrace:
+#0 0x557275d824e3 <unknown>
+#1 0x557275ab1c76 <unknown>
+#2 0x557275ad8757 <unknown>
+#3 0x557275ad7029 <unknown>
+#4 0x557275b15ccc <unknown>
+#5 0x557275b1547f <unknown>
+#6 0x557275b0cde3 <unknown>
+#7 0x557275ae22dd <unknown>
+#8 0x557275ae334e <unknown>
+#9 0x557275d423e4 <unknown>
+#10 0x557275d463d7 <unknown>
+#11 0x557275d50b20 <unknown>
+#12 0x557275d47023 <unknown>
+#13 0x557275d151aa <unknown>
+#14 0x557275d6b6b8 <unknown>
+#15 0x557275d6b847 <unknown>
+#16 0x557275d7b243 <unknown>
+#17 0x7fed758d9ac3 <unknown>
+
+2025-05-27 02:24:03,737 | ERROR | web_driver_config:<module> - Erro ao executar scraping: 'list' object has no attribute 'get_attribute'
+2025-05-27 02:25:09,189 | ERROR | web_driver_config:<module> - Erro ao executar scraping: Message: invalid session id: session deleted as the browser has closed the connection
+from disconnected: not connected to DevTools
+  (Session info: chrome=136.0.7103.113)
+Stacktrace:
+#0 0x55609d7dc71a <unknown>
+#1 0x55609d27f0a0 <unknown>
+#2 0x55609d2658ae <unknown>
+#3 0x55609d28dbe9 <unknown>
+#4 0x55609d2fecef <unknown>
+#5 0x55609d31bc3c <unknown>
+#6 0x55609d2f6173 <unknown>
+#7 0x55609d2c2d4b <unknown>
+#8 0x55609d2c39b1 <unknown>
+#9 0x55609d7a18cb <unknown>
+#10 0x55609d7a57ca <unknown>
+#11 0x55609d789622 <unknown>
+#12 0x55609d7a6354 <unknown>
+#13 0x55609d76e45f <unknown>
+#14 0x55609d7ca4f8 <unknown>
+#15 0x55609d7ca6d6 <unknown>
+#16 0x55609d7db586 <unknown>
+#17 0x7f65af7faac3 <unknown>
+
+2025-05-27 02:25:28,926 | ERROR | web_driver_config:<module> - Erro ao executar scraping: Expected exactly 1 matching div, but found 0.
+2025-05-27 02:27:13,228 | ERROR | web_driver_config:<module> - Erro ao executar scraping: 'WebElement' object is not iterable
+2025-05-27 02:27:45,986 | ERROR | web_driver_config:<module> - Erro ao executar scraping: Expected exactly 1 matching div, but found 0.
+2025-05-27 02:37:29,511 | ERROR | web_driver_config:<module> - Erro ao executar scraping: Expected exactly 1 matching div, but found 0.
+2025-05-27 02:39:12,218 | ERROR | web_driver_config:<module> - Erro ao executar scraping: Message: 
+Stacktrace:
+#0 0x55f45c30f71a <unknown>
+#1 0x55f45bdb20a0 <unknown>
+#2 0x55f45be039b0 <unknown>
+#3 0x55f45be03ba1 <unknown>
+#4 0x55f45be51ea4 <unknown>
+#5 0x55f45be293cd <unknown>
+#6 0x55f45be4f2a0 <unknown>
+#7 0x55f45be29173 <unknown>
+#8 0x55f45bdf5d4b <unknown>
+#9 0x55f45bdf69b1 <unknown>
+#10 0x55f45c2d48cb <unknown>
+#11 0x55f45c2d87ca <unknown>
+#12 0x55f45c2bc622 <unknown>
+#13 0x55f45c2d9354 <unknown>
+#14 0x55f45c2a145f <unknown>
+#15 0x55f45c2fd4f8 <unknown>
+#16 0x55f45c2fd6d6 <unknown>
+#17 0x55f45c30e586 <unknown>
+#18 0x7f1ff4d79ac3 <unknown>
+
+2025-05-27 02:39:44,243 | ERROR | web_driver_config:<module> - Erro ao executar scraping: Message: 
+Stacktrace:
+#0 0x558b9ae6a71a <unknown>
+#1 0x558b9a90d0a0 <unknown>
+#2 0x558b9a95e9b0 <unknown>
+#3 0x558b9a95eba1 <unknown>
+#4 0x558b9a9acea4 <unknown>
+#5 0x558b9a9843cd <unknown>
+#6 0x558b9a9aa2a0 <unknown>
+#7 0x558b9a984173 <unknown>
+#8 0x558b9a950d4b <unknown>
+#9 0x558b9a9519b1 <unknown>
+#10 0x558b9ae2f8cb <unknown>
+#11 0x558b9ae337ca <unknown>
+#12 0x558b9ae17622 <unknown>
+#13 0x558b9ae34354 <unknown>
+#14 0x558b9adfc45f <unknown>
+#15 0x558b9ae584f8 <unknown>
+#16 0x558b9ae586d6 <unknown>
+#17 0x558b9ae69586 <unknown>
+#18 0x7f7703f3dac3 <unknown>
+
+2025-05-27 02:40:54,224 | ERROR | web_driver_config:<module> - Erro ao executar scraping: Message: 
+Stacktrace:
+#0 0x558e448b471a <unknown>
+#1 0x558e443570a0 <unknown>
+#2 0x558e443a89b0 <unknown>
+#3 0x558e443a8ba1 <unknown>
+#4 0x558e443f6ea4 <unknown>
+#5 0x558e443ce3cd <unknown>
+#6 0x558e443f42a0 <unknown>
+#7 0x558e443ce173 <unknown>
+#8 0x558e4439ad4b <unknown>
+#9 0x558e4439b9b1 <unknown>
+#10 0x558e448798cb <unknown>
+#11 0x558e4487d7ca <unknown>
+#12 0x558e44861622 <unknown>
+#13 0x558e4487e354 <unknown>
+#14 0x558e4484645f <unknown>
+#15 0x558e448a24f8 <unknown>
+#16 0x558e448a26d6 <unknown>
+#17 0x558e448b3586 <unknown>
+#18 0x7f3e30cc9ac3 <unknown>
+
+2025-05-27 02:41:08,292 | ERROR | web_driver_config:<module> - Erro ao executar scraping: 'WebElement' object is not iterable
+2025-05-27 02:45:34,484 | ERROR | web_driver_config:<module> - Erro ao executar scraping: 'WebElement' object is not iterable
+2025-05-27 02:45:54,643 | ERROR | web_driver_config:<module> - Erro ao executar scraping: 'WebElement' object is not iterable
+2025-05-27 02:54:51,820 | ERROR | web_driver_config:<module> - Erro ao executar scraping: 'list' object has no attribute 'get_attribute'
+2025-05-27 02:56:34,745 | ERROR | web_driver_config:<module> - Erro ao executar scraping: 'list' object has no attribute 'text'
+2025-05-27 03:41:40,518 | ERROR | web_driver_config:<module> - Erro ao executar scraping: Message: 
+Stacktrace:
+#0 0x55d1fc00671a <unknown>
+#1 0x55d1fbaa90a0 <unknown>
+#2 0x55d1fbafa9b0 <unknown>
+#3 0x55d1fbafaba1 <unknown>
+#4 0x55d1fbb48ea4 <unknown>
+#5 0x55d1fbb203cd <unknown>
+#6 0x55d1fbb462a0 <unknown>
+#7 0x55d1fbb20173 <unknown>
+#8 0x55d1fbaecd4b <unknown>
+#9 0x55d1fbaed9b1 <unknown>
+#10 0x55d1fbfcb8cb <unknown>
+#11 0x55d1fbfcf7ca <unknown>
+#12 0x55d1fbfb3622 <unknown>
+#13 0x55d1fbfd0354 <unknown>
+#14 0x55d1fbf9845f <unknown>
+#15 0x55d1fbff44f8 <unknown>
+#16 0x55d1fbff46d6 <unknown>
+#17 0x55d1fc005586 <unknown>
+#18 0x7f68fddc5ac3 <unknown>
+
+2025-05-27 04:22:48,244 | ERROR | web_driver_config:<module> - Erro ao executar scraping: 'IEEESources' object has no attribute 'find_elements'
